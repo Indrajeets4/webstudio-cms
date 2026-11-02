@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "title": "Modern Interior Design",
+    "slug": "modern-interior-design",
+    "category": "Interior Design",
+    "author": "Admin",
+    "date": "2026-11-02",
+    "thumbnail": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0",
+    "excerpt": "Explore modern interior design principles.",
+    "content": "<h2>Introduction</h2><p>Modern interior design combines functionality and aesthetics.</p>",
+    "published": true
+  },
+  {
+    "id": "2",
+    "title": "Minimalist Home Design",
+    "slug": "minimalist-home-design",
+    "category": "Architecture",
+    "author": "Admin",
+    "date": "2026-11-02",
+    "thumbnail": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c",
+    "excerpt": "Discover the beauty of minimalist homes.",
+    "content": "<h2>Introduction</h2><p>Minimalist homes focus on simplicity.</p>",
+    "published": true
+  }
+]
