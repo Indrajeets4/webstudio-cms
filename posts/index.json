@@ -31,7 +31,7 @@
     "category": "Connected Devices",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://images.unsplash.com/photo-1581093458791-9d42e3c2e1e5",
+    "thumbnail": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d",
     "excerpt": "Medical devices can generate valuable data, but that information needs reliable connectivity and thoughtful workflows to become useful to healthcare teams.",
     "content": "<h2>Making Device Data Useful</h2><p>Patient monitors, diagnostic equipment and point-of-care devices can produce information that supports clinical and operational workflows. The challenge is ensuring that data moves reliably from the device to the people and systems that need it.</p><h2>Choosing the Right Connection</h2><p>Depending on the device and setting, integration may involve Wi-Fi, Bluetooth or other communication technologies. The right approach depends on range, reliability, security, power requirements and the environment in which the device is used.</p><h2>Designing the Complete Workflow</h2><p>Device integration should account for pairing, identity, data validation, exception handling and what happens when connectivity is interrupted. A successful solution considers the full journey, not just the transfer of data.</p><h2>Hardware and Software Together</h2><p>Connected products work best when hardware, software and user workflows are considered as one integrated experience.</p>",
     "published": true
