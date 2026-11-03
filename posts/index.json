@@ -19,7 +19,7 @@
     "category": "Health Data",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://images.unsplash.com/photo-1579684385127-1ef15d508118",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/main/posts/images/luke-chesser-JKUTrJ4vK00-unsplash.jpg",
     "excerpt": "When health systems can exchange information consistently, care teams and public health programmes gain a clearer picture. Learn why interoperability matters.",
     "content": "<h2>The Challenge of Fragmented Information</h2><p>Healthcare information is often spread across facilities, applications and administrative systems. When these systems cannot communicate, staff may need to enter the same information repeatedly and decision-makers may struggle to build a complete view.</p><h2>Why Standards Matter</h2><p>Standards such as HL7 FHIR provide shared structures and conventions for representing and exchanging health information. Terminologies such as SNOMED CT and ICD help systems describe clinical concepts consistently.</p><h2>Interoperability Is More Than an Interface</h2><p>Successful exchange depends on governance, data quality, privacy, security and the workflows around the technology. Teams need to agree what information is shared, who can access it and how it will be used.</p><h2>Building Connected Systems</h2><p>Connected systems can help organisations reduce information silos and support more informed decisions across healthcare environments.</p>",
     "published": true
