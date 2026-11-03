@@ -1,0 +1,238 @@
+
+name: Process Blog Content Request
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update-blog:
+    if: startsWith(github.event.issue.title, '[Content CMS] ')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Process content request and create pull request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue = context.payload.issue;
+
+            function getField(label) {
+              const lines = (issue.body || '').split(/\r?\n/);
+
+              for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim() === `### ${label}`) {
+                  const value = [];
+                  for (let j = i + 1; j < lines.length; j++) {
+                    if (lines[j].startsWith('### ')) break;
+                    value.push(lines[j]);
+                  }
+
+                  const result = value.join('\n').trim();
+                  return (!result || result === '_No response_') ? '' : result;
+                }
+              }
+              return '';
+            }
+
+            async function fail(message) {
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: issue.number,
+                body: `⚠️ **Content request not processed**\n\n${message}`
+              });
+              throw new Error(message);
+            }
+
+            try {
+              // Only repository maintainers can request automated changes.
+              const permission = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username: issue.user.login
+              });
+
+              if (!['admin', 'write', 'maintain'].includes(permission.data.permission)) {
+                return await fail('Only repository owners and collaborators with write or maintain access can run content updates.');
+              }
+
+              const action = getField('Action');
+              const articleId = getField('Article ID');
+              const published = getField('Publication status');
+
+              if (!articleId) {
+                return await fail('Article ID is required.');
+              }
+
+              const fields = {
+                title: getField('Article title'),
+                slug: getField('Article slug'),
+                category: getField('Category'),
+                author: getField('Author'),
+                date: getField('Publication date'),
+                thumbnail: getField('Thumbnail image URL'),
+                excerpt: getField('Short description'),
+                content: getField('Full article content')
+              };
+
+              if (fields.date) {
+                const match = fields.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (!match) return await fail('Publication date must use YYYY-MM-DD.');
+                const d = new Date(Date.UTC(+match[1], +match[2] - 1, +match[3]));
+                if (d.getUTCFullYear() !== +match[1] ||
+                    d.getUTCMonth() !== +match[2] - 1 ||
+                    d.getUTCDate() !== +match[3]) {
+                  return await fail('Publication date is not a valid calendar date.');
+                }
+              }
+
+              if (fields.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(fields.slug)) {
+                return await fail('Slug must contain lowercase letters, numbers and single hyphens only.');
+              }
+
+              if (fields.thumbnail) {
+                try {
+                  const url = new URL(fields.thumbnail);
+                  if (!['https:', 'http:'].includes(url.protocol)) throw new Error();
+                } catch {
+                  return await fail('Thumbnail must be a valid HTTP or HTTPS image URL.');
+                }
+              }
+
+              // Read the current JSON from main.
+              const base = await github.rest.repos.getBranch({
+                owner, repo, branch: 'main'
+              });
+
+              const file = await github.rest.repos.getContent({
+                owner, repo,
+                path: 'posts/index.json',
+                ref: base.data.commit.sha
+              });
+
+              const posts = JSON.parse(
+                Buffer.from(file.data.content, 'base64').toString('utf8')
+              );
+
+              if (!Array.isArray(posts)) {
+                return await fail('posts/index.json must contain a JSON array.');
+              }
+
+              let article = posts.find(p => String(p.id) === articleId);
+
+              if (action === 'Update existing article') {
+                if (!article) return await fail(`Article ID ${articleId} was not found.`);
+
+                let changed = false;
+                for (const [key, value] of Object.entries(fields)) {
+                  if (value !== '') {
+                    article[key] = value;
+                    changed = true;
+                  }
+                }
+
+                if (published === 'true' || published === 'false') {
+                  article.published = published === 'true';
+                  changed = true;
+                }
+
+                if (!changed) return await fail('No changes were provided.');
+
+              } else if (action === 'Add new article') {
+                if (article) return await fail(`Article ID ${articleId} already exists.`);
+
+                const required = [
+                  'title', 'slug', 'category', 'author',
+                  'date', 'thumbnail', 'excerpt', 'content'
+                ];
+
+                const missing = required.filter(key => !fields[key]);
+                if (missing.length) {
+                  return await fail(`Complete these fields for a new article: ${missing.join(', ')}.`);
+                }
+
+                article = {
+                  id: articleId,
+                  ...fields,
+                  published: published === 'false' ? false : true
+                };
+
+                posts.push(article);
+
+              } else if (action === 'Change publication status') {
+                if (!article) return await fail(`Article ID ${articleId} was not found.`);
+                if (!['true', 'false'].includes(published)) {
+                  return await fail('Choose true or false for Publication status.');
+                }
+                article.published = published === 'true';
+
+              } else {
+                return await fail('Please select a valid Action.');
+              }
+
+              // Prevent duplicate article IDs and slugs.
+              const ids = posts.map(p => String(p.id));
+              const slugs = posts.map(p => p.slug);
+
+              if (new Set(ids).size !== ids.length) {
+                return await fail('Duplicate article IDs were detected.');
+              }
+
+              if (new Set(slugs).size !== slugs.length) {
+                return await fail('Duplicate article slugs were detected.');
+              }
+
+              // Create a separate branch for review.
+              const branchName = `content-request-${issue.number}-${context.runId}`;
+
+              await github.rest.git.createRef({
+                owner, repo,
+                ref: `refs/heads/${branchName}`,
+                sha: base.data.commit.sha
+              });
+
+              // Update the JSON file on the new branch.
+              await github.rest.repos.createOrUpdateFileContents({
+                owner, repo,
+                path: 'posts/index.json',
+                message: `Apply blog content request #${issue.number}`,
+                content: Buffer.from(JSON.stringify(posts, null, 2) + '\n').toString('base64'),
+                sha: file.data.sha,
+                branch: branchName
+              });
+
+              // Open a pull request against main.
+              const pr = await github.rest.pulls.create({
+                owner, repo,
+                title: `[CMS] ${issue.title}`,
+                head: branchName,
+                base: 'main',
+                body: [
+                  '## Blog content update',
+                  '',
+                  `Requested in #${issue.number}.`,
+                  '',
+                  `Action: **${action}**`,
+                  `Article ID: **${articleId}**`,
+                  '',
+                  'Please review the JSON changes before merging.',
+                  'Merging this PR updates the live GitHub Raw JSON source.'
+                ].join('\n')
+              });
+
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: issue.number,
+                body: `✅ Your content request has been processed. Review the proposed changes here: ${pr.data.html_url}`
+              });
+
+            } catch (error) {
+              core.setFailed(error.message);
+              throw error;
+            }
