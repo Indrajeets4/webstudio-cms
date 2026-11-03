@@ -7,7 +7,7 @@
     "category": "Digital Health",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/main/posts/images/vitaly-gariev-WI3hAbxMF80-unsplash.jpg",
     "excerpt": "A useful digital health platform starts with the people, workflows and care settings it is meant to support. Explore a human-centred approach to healthcare technology design.",
     "content": "<h2>Technology Should Fit the Realities of Care</h2><p>Healthcare teams work across busy clinics, hospitals, laboratories and community settings. A digital tool is valuable when it supports the way people actually deliver care, rather than adding another layer of complexity.</p><h2>Start with Discovery</h2><p>Needs assessment, workflow observation and conversations with users help uncover the real problem. This early work can reveal where information is lost, where processes slow down and where a carefully designed digital intervention could make a difference.</p><h2>Design, Test and Improve</h2><p>Rapid prototypes allow clinicians, administrators and other stakeholders to respond to a solution before it is fully built. Iterative testing helps teams refine usability, information flows and operational fit.</p><h2>From Idea to Implementation</h2><p>The Lattice brings together technology, product thinking and practical problem-solving to explore digital solutions for complex environments. This sample article illustrates a possible editorial direction.</p>",
     "published": true
@@ -31,7 +31,7 @@
     "category": "Connected Devices",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://images.unsplash.com/photo-1581093458791-9d42e3c2e1e5",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/main/posts/images/luke-chesser-JKUTrJ4vK00-unsplash.jpg",
     "excerpt": "Medical devices can generate valuable data, but that information needs reliable connectivity and thoughtful workflows to become useful to healthcare teams.",
     "content": "<h2>Making Device Data Useful</h2><p>Patient monitors, diagnostic equipment and point-of-care devices can produce information that supports clinical and operational workflows. The challenge is ensuring that data moves reliably from the device to the people and systems that need it.</p><h2>Choosing the Right Connection</h2><p>Depending on the device and setting, integration may involve Wi-Fi, Bluetooth or other communication technologies. The right approach depends on range, reliability, security, power requirements and the environment in which the device is used.</p><h2>Designing the Complete Workflow</h2><p>Device integration should account for pairing, identity, data validation, exception handling and what happens when connectivity is interrupted. A successful solution considers the full journey, not just the transfer of data.</p><h2>Hardware and Software Together</h2><p>Connected products work best when hardware, software and user workflows are considered as one integrated experience.</p>",
     "published": true
