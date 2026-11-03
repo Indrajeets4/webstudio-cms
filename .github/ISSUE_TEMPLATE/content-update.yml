@@ -101,7 +101,7 @@ body:
       label: Publication status
       options:
         - Keep current
-        - true
-        - false
+        - "true"
+        - "false"
     validations:
       required: true
