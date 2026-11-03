@@ -7,7 +7,7 @@
     "category": "Digital Health",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://github.com/Indrajeets4/webstudio-cms/blob/main/posts/images/vitaly-gariev-Wl3hAbxMF80-unsplash.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/main/posts/images/vitaly-gariev-WI3hAbxMF80-unsplash.jpg",
     "excerpt": "A useful digital health platform starts with the people, workflows and care settings it is meant to support. Explore a human-centred approach to healthcare technology design.",
     "content": "<h2>Technology Should Fit the Realities of Care</h2><p>Healthcare teams work across busy clinics, hospitals, laboratories and community settings. A digital tool is valuable when it supports the way people actually deliver care, rather than adding another layer of complexity.</p><h2>Start with Discovery</h2><p>Needs assessment, workflow observation and conversations with users help uncover the real problem. This early work can reveal where information is lost, where processes slow down and where a carefully designed digital intervention could make a difference.</p><h2>Design, Test and Improve</h2><p>Rapid prototypes allow clinicians, administrators and other stakeholders to respond to a solution before it is fully built. Iterative testing helps teams refine usability, information flows and operational fit.</p><h2>From Idea to Implementation</h2><p>The Lattice brings together technology, product thinking and practical problem-solving to explore digital solutions for complex environments. This sample article illustrates a possible editorial direction.</p>",
     "published": true
@@ -19,7 +19,7 @@
     "category": "Health Data",
     "author": "The Lattice",
     "date": "2026-11-02",
-    "thumbnail": "https://github.com/Indrajeets4/webstudio-cms/blob/main/posts/images/luke-chesser-JKUTrJ4vK00-unsplash.jpg",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/blob/main/posts/images/luke-chesser-JKUTrJ4vK00-unsplash.jpg",
     "excerpt": "When health systems can exchange information consistently, care teams and public health programmes gain a clearer picture. Learn why interoperability matters.",
     "content": "<h2>The Challenge of Fragmented Information</h2><p>Healthcare information is often spread across facilities, applications and administrative systems. When these systems cannot communicate, staff may need to enter the same information repeatedly and decision-makers may struggle to build a complete view.</p><h2>Why Standards Matter</h2><p>Standards such as HL7 FHIR provide shared structures and conventions for representing and exchanging health information. Terminologies such as SNOMED CT and ICD help systems describe clinical concepts consistently.</p><h2>Interoperability Is More Than an Interface</h2><p>Successful exchange depends on governance, data quality, privacy, security and the workflows around the technology. Teams need to agree what information is shared, who can access it and how it will be used.</p><h2>Building Connected Systems</h2><p>Connected systems can help organisations reduce information silos and support more informed decisions across healthcare environments.</p>",
     "published": true
