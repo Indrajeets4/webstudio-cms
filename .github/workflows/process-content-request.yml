@@ -28,26 +28,18 @@ jobs:
             function getField(label) {
               const lines = (issue.body || '').split(/\r?\n/);
               const heading = `### ${label}`;
-              const start = lines.findIndex(
-                line => line.trim() === heading
-              );
+              const start = lines.findIndex(line => line.trim() === heading);
 
               if (start === -1) return '';
 
               const value = [];
-
               for (let i = start + 1; i < lines.length; i++) {
                 if (/^###\s/.test(lines[i])) break;
                 value.push(lines[i]);
               }
 
               const result = value.join('\n').trim();
-
-              if (!result || result === '_No response_') {
-                return '';
-              }
-
-              return result;
+              return (!result || result === '_No response_') ? '' : result;
             }
 
             async function fail(message) {
@@ -57,27 +49,28 @@ jobs:
                 issue_number: issue.number,
                 body: `⚠️ **Content request not processed**\n\n${message}`
               });
-
               throw new Error(message);
             }
 
             try {
-              // Only the repository owner can request automatic changes.
-              if (
-                issue.user.login.toLowerCase() !== owner.toLowerCase()
-              ) {
-                await fail(
-                  'Only the repository owner can submit automated content requests.'
-                );
+              if (issue.user.login.toLowerCase() !== owner.toLowerCase()) {
+                await fail('Only the repository owner can submit automated content requests.');
               }
 
-              // Read the submitted form.
               const action = getField('Action');
               const articleId = getField('Article ID');
               const published = getField('Publication status');
 
-              if (!articleId) {
-                await fail('Article ID is required.');
+              if (!articleId) await fail('Article ID is required.');
+
+              const uploadField = getField('Upload thumbnail image');
+              const uploadMatch = uploadField.match(
+                /\]\((https:\/\/github\.com\/user-attachments\/assets\/[A-Za-z0-9-]+)\)/
+              );
+              const uploadedImageUrl = uploadMatch ? uploadMatch[1] : '';
+
+              if (uploadField && !uploadedImageUrl) {
+                await fail('Could not read the uploaded image. Please upload it again.');
               }
 
               const fields = {
@@ -86,28 +79,19 @@ jobs:
                 category: getField('Category'),
                 author: getField('Author'),
                 date: getField('Publication date'),
-                thumbnail: getField('Thumbnail image URL'),
                 excerpt: getField('Short description'),
                 content: getField('Full article content')
               };
 
-              // Validate publication date.
               if (fields.date) {
-                const match = fields.date.match(
-                  /^(\d{4})-(\d{2})-(\d{2})$/
-                );
+                const match = fields.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (!match) await fail('Date must use YYYY-MM-DD format.');
 
-                if (!match) {
-                  await fail('Date must use YYYY-MM-DD format.');
-                }
-
-                const date = new Date(
-                  Date.UTC(
-                    Number(match[1]),
-                    Number(match[2]) - 1,
-                    Number(match[3])
-                  )
-                );
+                const date = new Date(Date.UTC(
+                  Number(match[1]),
+                  Number(match[2]) - 1,
+                  Number(match[3])
+                ));
 
                 if (
                   date.getUTCFullYear() !== Number(match[1]) ||
@@ -118,41 +102,19 @@ jobs:
                 }
               }
 
-              // Validate slug.
               if (
                 fields.slug &&
                 !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(fields.slug)
               ) {
-                await fail(
-                  'Slug must contain lowercase letters, numbers and single hyphens.'
-                );
+                await fail('Slug must contain lowercase letters, numbers and single hyphens.');
               }
 
-              // Validate thumbnail URL.
-              if (fields.thumbnail) {
-                try {
-                  const imageUrl = new URL(fields.thumbnail);
-
-                  if (imageUrl.protocol !== 'https:') {
-                    throw new Error('HTTPS required');
-                  }
-                } catch {
-                  await fail(
-                    'Thumbnail must be a valid HTTPS image URL.'
-                  );
-                }
-              }
-
-              // Read the latest JSON file from main.
               const base = await github.rest.repos.getBranch({
-                owner,
-                repo,
-                branch: 'main'
+                owner, repo, branch: 'main'
               });
 
               const file = await github.rest.repos.getContent({
-                owner,
-                repo,
+                owner, repo,
                 path: 'posts/index.json',
                 ref: base.data.commit.sha
               });
@@ -162,31 +124,19 @@ jobs:
               }
 
               const posts = JSON.parse(
-                Buffer.from(
-                  file.data.content,
-                  'base64'
-                ).toString('utf8')
+                Buffer.from(file.data.content, 'base64').toString('utf8')
               );
 
               if (!Array.isArray(posts)) {
-                await fail(
-                  'posts/index.json must contain a JSON array.'
-                );
+                await fail('posts/index.json must contain a JSON array.');
               }
 
-              // Find the article by ID.
-              let article = posts.find(
-                post => String(post.id) === articleId
-              );
+              let article = posts.find(post => String(post.id) === articleId);
 
-              // Update an existing article.
               if (action === 'Update existing article') {
-                if (!article) {
-                  await fail(`Article ID ${articleId} was not found.`);
-                }
+                if (!article) await fail(`Article ID ${articleId} was not found.`);
 
                 let changed = false;
-
                 for (const [key, value] of Object.entries(fields)) {
                   if (value !== '') {
                     article[key] = value;
@@ -199,60 +149,39 @@ jobs:
                   changed = true;
                 }
 
-                if (!changed) {
-                  await fail('No changes were provided.');
-                }
+                if (uploadedImageUrl) changed = true;
+                if (!changed) await fail('No changes were provided.');
 
-              // Add a new article.
               } else if (action === 'Add new article') {
-                if (article) {
-                  await fail(
-                    `Article ID ${articleId} already exists.`
-                  );
-                }
+                if (article) await fail(`Article ID ${articleId} already exists.`);
 
-                const requiredFields = [
-                  'title',
-                  'slug',
-                  'category',
-                  'author',
-                  'date',
-                  'thumbnail',
-                  'excerpt',
-                  'content'
+                const required = [
+                  'title', 'slug', 'category', 'author',
+                  'date', 'excerpt', 'content'
                 ];
 
-                const missing = requiredFields.filter(
-                  key => !fields[key]
-                );
+                const missing = required.filter(key => !fields[key]);
+
+                if (!uploadedImageUrl) missing.push('thumbnail image upload');
 
                 if (missing.length) {
-                  await fail(
-                    `Please complete these fields: ${missing.join(', ')}`
-                  );
+                  await fail(`Please complete these fields: ${missing.join(', ')}`);
                 }
 
                 article = {
                   id: articleId,
                   ...fields,
+                  thumbnail: '',
                   published: published === 'false' ? false : true
                 };
 
                 posts.push(article);
 
-              // Change publication status only.
               } else if (action === 'Change publication status') {
-                if (!article) {
-                  await fail(`Article ID ${articleId} was not found.`);
-                }
+                if (!article) await fail(`Article ID ${articleId} was not found.`);
 
-                if (
-                  published !== 'true' &&
-                  published !== 'false'
-                ) {
-                  await fail(
-                    'Choose true or false for publication status.'
-                  );
+                if (published !== 'true' && published !== 'false') {
+                  await fail('Choose true or false for publication status.');
                 }
 
                 article.published = published === 'true';
@@ -261,25 +190,16 @@ jobs:
                 await fail('Please select a valid action.');
               }
 
-              // Prevent duplicate IDs.
-              const ids = posts.map(
-                post => String(post.id)
-              );
-
+              const ids = posts.map(post => String(post.id));
               if (new Set(ids).size !== ids.length) {
                 await fail('Duplicate article IDs detected.');
               }
 
-              // Prevent duplicate slugs.
-              const slugs = posts.map(
-                post => post.slug
-              );
-
+              const slugs = posts.map(post => post.slug);
               if (new Set(slugs).size !== slugs.length) {
                 await fail('Duplicate article slugs detected.');
               }
 
-              // Create a separate branch.
               const branchName =
                 `content-request-${issue.number}-${context.runId}`;
 
@@ -290,7 +210,85 @@ jobs:
                 sha: base.data.commit.sha
               });
 
-              // Update JSON on the new branch.
+              if (uploadedImageUrl) {
+                const sourceUrl = new URL(uploadedImageUrl);
+
+                if (
+                  sourceUrl.protocol !== 'https:' ||
+                  sourceUrl.hostname !== 'github.com' ||
+                  !sourceUrl.pathname.startsWith('/user-attachments/assets/')
+                ) {
+                  await fail('Thumbnail must be a GitHub issue attachment.');
+                }
+
+                const response = await fetch(uploadedImageUrl, {
+                  signal: AbortSignal.timeout(30000)
+                });
+
+                if (!response.ok) {
+                  await fail('Could not download the uploaded image.');
+                }
+
+                const finalHost = new URL(response.url).hostname;
+                const allowedHosts = [
+                  'github.com',
+                  'user-images.githubusercontent.com',
+                  'private-user-images.githubusercontent.com',
+                  'objects.githubusercontent.com'
+                ];
+
+                if (!allowedHosts.includes(finalHost)) {
+                  await fail('Image download redirected to an unsupported host.');
+                }
+
+                const contentType = (response.headers.get('content-type') || '')
+                  .split(';')[0].trim().toLowerCase();
+
+                const extensions = {
+                  'image/jpeg': 'jpg',
+                  'image/png': 'png',
+                  'image/webp': 'webp'
+                };
+
+                const extension = extensions[contentType];
+                if (!extension) {
+                  await fail('Only JPG, PNG and WEBP images are supported.');
+                }
+
+                const declaredLength = Number(response.headers.get('content-length') || 0);
+                if (declaredLength > 10 * 1024 * 1024) {
+                  await fail('Image must not exceed 10 MB.');
+                }
+
+                const bytes = Buffer.from(await response.arrayBuffer());
+
+                if (!bytes.length || bytes.length > 10 * 1024 * 1024) {
+                  await fail('Image must be larger than 0 bytes and no more than 10 MB.');
+                }
+
+                const imagePath =
+                  `posts/images/article-${articleId}-${issue.number}.${extension}`;
+
+                await github.rest.repos.createOrUpdateFileContents({
+                  owner,
+                  repo,
+                  path: imagePath,
+                  message: `Add thumbnail for article ${articleId}`,
+                  content: bytes.toString('base64'),
+                  branch: branchName
+                });
+
+                article.thumbnail =
+                  `https://raw.githubusercontent.com/${owner}/${repo}/main/${imagePath}`;
+              }
+
+              const updatedFile = await github.rest.repos.getContent({
+                owner,
+                repo,
+                path: 'posts/index.json',
+                ref: branchName
+              });
+
               await github.rest.repos.createOrUpdateFileContents({
                 owner,
                 repo,
@@ -299,11 +297,10 @@ jobs:
                 content: Buffer.from(
                   JSON.stringify(posts, null, 2) + '\n'
                 ).toString('base64'),
-                sha: file.data.sha,
+                sha: updatedFile.data.sha,
                 branch: branchName
               });
 
-              // Create a Pull Request for review.
               const pr = await github.rest.pulls.create({
                 owner,
                 repo,
@@ -318,13 +315,12 @@ jobs:
                   `Action: **${action}**`,
                   `Article ID: **${articleId}**`,
                   '',
-                  'Please review the JSON changes before merging.',
+                  'Please review the JSON and image changes before merging.',
                   '',
                   'Merging this PR updates the live GitHub Raw JSON source.'
                 ].join('\n')
               });
 
-              // Notify the original issue.
               await github.rest.issues.createComment({
                 owner,
                 repo,
