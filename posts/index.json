@@ -82,5 +82,17 @@
     "excerpt": "Explore how digital health platforms can bring healthcare information, services and communication together to create more connected and convenient patient experiences.",
     "content": "<h2>Introduction</h2>\n<p>Digital technology is changing how healthcare services are accessed, delivered and managed. Digital health platforms can bring different healthcare tools and information together, helping patients and healthcare professionals communicate more effectively.</p>\n\n<h2>What Is a Digital Health Platform?</h2>\n<p>A digital health platform is a technology-based environment that connects healthcare information, services and users. Depending on its design, it may include patient records, appointment management, teleconsultation, health monitoring and reporting tools.</p>\n\n<h2>Making Healthcare More Connected</h2>\n<p>When healthcare information is organised and accessible to authorised users, it can support better coordination between patients, doctors and healthcare organisations. Connected systems can also reduce repetitive administrative work.</p>\n\n<h2>Improving the Patient Experience</h2>\n<p>Well-designed digital platforms can make it easier for patients to access relevant information, communicate with healthcare providers and manage appointments. Clear navigation and accessible interfaces are important parts of this experience.</p>\n\n<h2>The Role of Good Design</h2>\n<p>Technology alone does not guarantee a good healthcare experience. Platforms should be designed around real user needs, privacy, accessibility and ease of use. Different users may have different levels of digital literacy and different accessibility requirements.</p>\n\n<h2>Conclusion</h2>\n<p>Digital health platforms offer opportunities to make healthcare services more connected and user-friendly. Thoughtful design and responsible implementation are essential to making these solutions useful for patients and healthcare professionals.</p>\n\n<p><strong>Note:</strong> This is dummy editorial content created for CMS testing. It is not a verified case study or a description of an actual Lattice project.</p>",
     "published": true
+  },
+  {
+    "id": "8",
+    "title": "TEST – Final Image Upload Verification",
+    "slug": "test-final-image-upload-verification-8",
+    "category": "Digital Health",
+    "author": "Digital Health",
+    "date": "2026-11-11",
+    "excerpt": "Final test of automatic GitHub image upload.",
+    "content": "<h2>Image Upload Test</h2><p>Testing automatic image storage in the repository.</p>",
+    "thumbnail": "https://raw.githubusercontent.com/Indrajeets4/webstudio-cms/main/posts/images/article-8-10.jpg",
+    "published": false
   }
 ]
