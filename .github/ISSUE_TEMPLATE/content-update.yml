@@ -75,7 +75,7 @@ body:
     id: thumbnail
     attributes:
       label: Upload thumbnail image
-      description: Drag and drop an image or click to browse. Accepted formats: JPG, JPEG, PNG, WEBP. Maximum 10 MB.
+      description: "Drag and drop an image or click to browse. Accepted formats: JPG, JPEG, PNG, WEBP. Maximum 10 MB."
     validations:
       required: false
       accept: ".jpg,.jpeg,.png,.webp"
