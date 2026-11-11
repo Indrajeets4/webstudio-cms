@@ -238,7 +238,8 @@ jobs:
                 ];
 
                 if (!allowedHosts.includes(finalHost)) {
-                  await fail('Image download redirected to an unsupported host.');
+                console.log('Actual image redirect host:', finalHost);
+                  await fail(`Image download redirected to unsupported host: ${finalHost}`);
                 }
 
                 const contentType = (response.headers.get('content-type') || '')
