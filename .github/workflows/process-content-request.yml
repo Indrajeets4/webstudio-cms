@@ -61,7 +61,9 @@ jobs:
               const articleId = getField('Article ID');
               const published = getField('Publication status');
 
-              if (!articleId) await fail('Article ID is required.');
+              if (!articleId) {
+                await fail('Article ID is required.');
+              }
 
               const uploadField = getField('Upload thumbnail image');
               const uploadMatch = uploadField.match(
@@ -85,7 +87,9 @@ jobs:
 
               if (fields.date) {
                 const match = fields.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                if (!match) await fail('Date must use YYYY-MM-DD format.');
+                if (!match) {
+                  await fail('Date must use YYYY-MM-DD format.');
+                }
 
                 const date = new Date(Date.UTC(
                   Number(match[1]),
@@ -110,11 +114,14 @@ jobs:
               }
 
               const base = await github.rest.repos.getBranch({
-                owner, repo, branch: 'main'
+                owner,
+                repo,
+                branch: 'main'
               });
 
               const file = await github.rest.repos.getContent({
-                owner, repo,
+                owner,
+                repo,
                 path: 'posts/index.json',
                 ref: base.data.commit.sha
               });
@@ -131,12 +138,17 @@ jobs:
                 await fail('posts/index.json must contain a JSON array.');
               }
 
-              let article = posts.find(post => String(post.id) === articleId);
+              let article = posts.find(
+                post => String(post.id) === articleId
+              );
 
               if (action === 'Update existing article') {
-                if (!article) await fail(`Article ID ${articleId} was not found.`);
+                if (!article) {
+                  await fail(`Article ID ${articleId} was not found.`);
+                }
 
                 let changed = false;
+
                 for (const [key, value] of Object.entries(fields)) {
                   if (value !== '') {
                     article[key] = value;
@@ -150,19 +162,35 @@ jobs:
                 }
 
                 if (uploadedImageUrl) changed = true;
-                if (!changed) await fail('No changes were provided.');
+
+                if (!changed) {
+                  await fail('No changes were provided.');
+                }
 
               } else if (action === 'Add new article') {
-                if (article) await fail(`Article ID ${articleId} already exists.`);
+                if (article) {
+                  await fail(`Article ID ${articleId} already exists.`);
+                }
+
+                if (published !== 'true' && published !== 'false') {
+                  await fail('For a new article, choose true or false for publication status.');
+                }
 
                 const required = [
-                  'title', 'slug', 'category', 'author',
-                  'date', 'excerpt', 'content'
+                  'title',
+                  'slug',
+                  'category',
+                  'author',
+                  'date',
+                  'excerpt',
+                  'content'
                 ];
 
                 const missing = required.filter(key => !fields[key]);
 
-                if (!uploadedImageUrl) missing.push('thumbnail image upload');
+                if (!uploadedImageUrl) {
+                  missing.push('thumbnail image upload');
+                }
 
                 if (missing.length) {
                   await fail(`Please complete these fields: ${missing.join(', ')}`);
@@ -172,13 +200,15 @@ jobs:
                   id: articleId,
                   ...fields,
                   thumbnail: '',
-                  published: published === 'false' ? false : true
+                  published: published === 'true'
                 };
 
                 posts.push(article);
 
               } else if (action === 'Change publication status') {
-                if (!article) await fail(`Article ID ${articleId} was not found.`);
+                if (!article) {
+                  await fail(`Article ID ${articleId} was not found.`);
+                }
 
                 if (published !== 'true' && published !== 'false') {
                   await fail('Choose true or false for publication status.');
@@ -191,11 +221,13 @@ jobs:
               }
 
               const ids = posts.map(post => String(post.id));
+
               if (new Set(ids).size !== ids.length) {
                 await fail('Duplicate article IDs detected.');
               }
 
               const slugs = posts.map(post => post.slug);
+
               if (new Set(slugs).size !== slugs.length) {
                 await fail('Duplicate article slugs detected.');
               }
@@ -230,21 +262,24 @@ jobs:
                 }
 
                 const finalHost = new URL(response.url).hostname;
+
                 const allowedHosts = [
                   'github.com',
                   'user-images.githubusercontent.com',
                   'private-user-images.githubusercontent.com',
-                  'objects.githubusercontent.com'
+                  'objects.githubusercontent.com',
                   'github-production-user-asset-6210df.s3.amazonaws.com'
                 ];
 
                 if (!allowedHosts.includes(finalHost)) {
-                console.log('Actual image redirect host:', finalHost);
+                  console.log('Actual image redirect host:', finalHost);
                   await fail(`Image download redirected to unsupported host: ${finalHost}`);
                 }
 
                 const contentType = (response.headers.get('content-type') || '')
-                  .split(';')[0].trim().toLowerCase();
+                  .split(';')[0]
+                  .trim()
+                  .toLowerCase();
 
                 const extensions = {
                   'image/jpeg': 'jpg',
@@ -253,11 +288,15 @@ jobs:
                 };
 
                 const extension = extensions[contentType];
+
                 if (!extension) {
                   await fail('Only JPG, PNG and WEBP images are supported.');
                 }
 
-                const declaredLength = Number(response.headers.get('content-length') || 0);
+                const declaredLength = Number(
+                  response.headers.get('content-length') || 0
+                );
+
                 if (declaredLength > 10 * 1024 * 1024) {
                   await fail('Image must not exceed 10 MB.');
                 }
