@@ -71,13 +71,14 @@ body:
     validations:
       required: false
 
-  - type: input
+  - type: upload
     id: thumbnail
     attributes:
-      label: Thumbnail image URL
-      description: Enter a direct image URL that opens in a browser.
+      label: Upload thumbnail image
+      description: Drag and drop an image or click to browse. Accepted formats: JPG, JPEG, PNG, WEBP. Maximum 10 MB.
     validations:
       required: false
+      accept: ".jpg,.jpeg,.png,.webp"
 
   - type: textarea
     id: excerpt
