@@ -201,7 +201,7 @@ jobs:
               }
 
               const branchName =
-                `content-request-${issue.number}-${context.runId}`;
+                `content-request-${issue.number}-${context.runId}-${process.env.GITHUB_RUN_ATTEMPT}`;
 
               await github.rest.git.createRef({
                 owner,
